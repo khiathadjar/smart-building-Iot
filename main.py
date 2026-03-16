@@ -53,7 +53,6 @@ def add_thing(data: dict = Body(...)):
         print(f"Erreur de validation : {e}")
         raise HTTPException(status_code=500, detail="Données non conformes au schéma MongoDB")
 
-#connexion 
 @app.post("/login")
 def login(data: dict = Body(...)):
     return {"access_token": "test_token", "session": {"access_token": "test_token"}}
