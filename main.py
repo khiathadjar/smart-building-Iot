@@ -22,7 +22,7 @@ def root():
 def search_things(data: dict = Body(...)):
     search_query = data.get("search_query", "")
     query = {"name": {"$regex": search_query, "$options": "i"}}
-    results = list(things_collection.find(query))
+    results = list(things_collection.find(query).sort("name", 1))
     for item in results:
         item["_id"] = str(item["_id"])
     return results
