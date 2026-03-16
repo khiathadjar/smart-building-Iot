@@ -2,7 +2,7 @@ from fastapi import FastAPI, Body, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from base import things_collection
 from bson import ObjectId
-import uuid # Important pour générer l'ID que ta base exige
+import uuid
 
 app = FastAPI()
 
@@ -18,7 +18,6 @@ app.add_middleware(
 def root():
     return {"message": "Backend SmartLocate Opérationnel"}
 
-# --- RECHERCHE ET AFFICHAGE (Utilisé par index.html et objets.html) ---
 @app.post("/things/search")
 def search_things(data: dict = Body(...)):
     search_query = data.get("search_query", "")
@@ -28,7 +27,6 @@ def search_things(data: dict = Body(...)):
         item["_id"] = str(item["_id"])
     return results
 
-# --- AJOUTER UN OBJET (Utilisé par ajouter-objet.html) ---
 @app.post("/things/add")
 def add_thing(data: dict = Body(...)):
     try:
@@ -40,20 +38,19 @@ def add_thing(data: dict = Body(...)):
             "id": generated_id,
             "name": data.get("name"),
             "type": data.get("type"),
-            # Transformation en OBJET car ta base refuse les simples textes (strings)
+           
             "location": { "room": data.get("location") }, 
             "description": data.get("description", ""),
             "status": data.get("status", "active")
         }
-
-        # 2. Insertion
+        
         result = things_collection.insert_one(new_item)
-        print(f"✅ Objet ajouté dans MongoDB : {data.get('name')}")
+        print(f"Objet ajouté dans MongoDB : {data.get('name')}")
         
         return {"message": "Succès", "id": generated_id}
 
     except Exception as e:
-        print(f"❌ Erreur de validation : {e}")
+        print(f"Erreur de validation : {e}")
         raise HTTPException(status_code=500, detail="Données non conformes au schéma MongoDB")
 
 @app.post("/login")
