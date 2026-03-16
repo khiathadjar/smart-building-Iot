@@ -35,14 +35,13 @@ def add_thing(data: dict = Body(...)):
         generated_id = str(uuid.uuid4())[:8] 
 
         new_item = {
-            "id": generated_id,
-            "name": data.get("name"),
-            "type": data.get("type"),
-           
-            "location": { "room": data.get("location") }, 
-            "description": data.get("description", ""),
-            "status": data.get("status", "active")
-        }
+    "id": generated_id,
+    "name": data.get("name", "Sans nom"), # Valeur par défaut si manquant
+    "type": data.get("type", "unknown"),
+    "location": { "room": data.get("location", "N/A") }, 
+    "description": data.get("description", ""),
+    "status": data.get("status", "active")
+}
         
         result = things_collection.insert_one(new_item)
         print(f"Objet ajouté dans MongoDB : {data.get('name')}")
