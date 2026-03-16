@@ -27,7 +27,7 @@ def search_things(data: dict = Body(...)):
         item["_id"] = str(item["_id"])
     return results
 
-@app.post("/things/add")
+@app.post("/things/add, status_code=201")
 def add_thing(data: dict = Body(...)):
     try:
         # 1. Préparation pour respecter ta validation MongoDB (Code 121)
