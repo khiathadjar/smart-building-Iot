@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliBuild - Objets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { 
+            background: url('https://images.pexels.com/photos/4974912/pexels-photo-4974912.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .glass-sidebar { background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(4px); }
+        .glass-main { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="flex">
+    <script>
+        if (!localStorage.getItem('userToken')) {
+            window.location.href = "login.html";
+        }
+    </script>
+
+    <aside class="w-64 glass-sidebar min-h-screen text-gray-300 p-6 flex flex-col gap-6 shadow-2xl">
+        <div class="text-2xl font-bold flex items-center gap-2 text-white">
+            <i class="fas fa-wifi text-emerald-400"></i> IntelliBuild
+        </div>
+        <nav class="flex flex-col gap-4 mt-10">
+            <a href="index.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+            <a href="ajouter-objet.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition">
+                <i class="fas fa-plus"></i> Ajouter un objet
+            </a>
+            <a href="objets.html" class="bg-emerald-700 p-3 rounded-lg flex items-center gap-3 text-white shadow-lg transition">
+                <i class="fas fa-cube"></i> Objets
+            </a>
+            <a href="localisations.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition">
+                <i class="fas fa-map-marker-alt"></i> Localisations
+            </a>
+            <a href="parametres.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition">
+                <i class="fas fa-cog"></i> Paramètres
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-8">
+        <div class="flex justify-between items-center mb-8">
+            <div class="relative w-1/2">
+                <input type="text" id="objSearch" placeholder="Rechercher un objet..." class="w-full p-2 pl-10 rounded-xl border-none shadow-sm bg-white/90 focus:ring-2 focus:ring-emerald-600 outline-none">
+                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+        </div>
+
+        <div class="glass-main p-6 rounded-3xl shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-cube text-emerald-600"></i> Tous les objets</h2>
+                <button onclick="window.location.href='ajouter-objet.html'" class="bg-emerald-700 text-white px-5 py-2.5 rounded-xl hover:bg-emerald-800 transition">
+                    <i class="fas fa-plus"></i> Nouvel objet
+                </button>
+            </div>
+
+            <div id="objGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                </div>
+        </div>
+    </main>
+
+    <script>
+        async function fetchObjets(query = "") {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/things/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ search_query: query })
+                });
+                const items = await response.json();
+                const grid = document.getElementById('objGrid');
+                
+                grid.innerHTML = items.map(item => `
+                    <div class="bg-white/90 p-5 rounded-2xl border border-gray-200 hover:shadow-xl transition">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-700">
+                                    <i class="fas fa-cube text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">${item.name || 'Sans nom'}</h3>
+                                    <p class="text-xs text-gray-500">${item.type || 'Type inconnu'}</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase ${item.status === 'Disponible' || item.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">
+                                ● ${item.status || 'Inconnu'}
+                            </span>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2 text-xs text-gray-600">
+                            <i class="fas fa-map-marker-alt text-gray-400"></i>
+                            <span>${item.location?.room || item.location || 'N/A'}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) { 
+                console.error("Erreur backend:", error); 
+            }
+        }
+
+        document.getElementById('objSearch').addEventListener('input', (e) => fetchObjets(e.target.value));
+        window.onload = () => fetchObjets("");
+    </script>
+</body>
+</html>

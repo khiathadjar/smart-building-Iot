@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliBuild - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { 
+            background: url('https://images.pexels.com/photos/4974912/pexels-photo-4974912.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .glass-sidebar { background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(4px); }
+        .glass-main { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="flex">
+    <script>
+        if (!localStorage.getItem('userToken')) {
+            window.location.href = "login.html";
+        }
+    </script>
+
+    <aside class="w-64 glass-sidebar min-h-screen text-gray-300 p-6 flex flex-col gap-6 shadow-2xl">
+        <div class="text-2xl font-bold flex items-center gap-2 text-white">
+            <i class="fas fa-wifi text-emerald-400"></i> IntelliBuild
+        </div>
+        <nav class="flex flex-col gap-4 mt-10">
+            <a href="index.html" class="bg-emerald-700 p-3 rounded-lg flex items-center gap-3 text-white">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+            <a href="ajouter-objet.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition">
+                <i class="fas fa-plus"></i> Ajouter
+            </a>
+            <a href="objets.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition">
+                <i class="fas fa-cube"></i> Objets
+            </a>
+            <a href="localisations.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition">
+                <i class="fas fa-map-marker-alt"></i> Localisations
+            </a>
+            <a href="parametres.html" class="p-3 hover:bg-gray-800 rounded-lg flex items-center gap-3 transition mt-auto">
+                <i class="fas fa-cog"></i> Paramètres
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-8">
+        <div class="flex justify-between items-center mb-8">
+            <div class="relative w-1/2">
+                <input type="text" id="mainSearch" placeholder="Rechercher un objet..." 
+                       class="w-full p-2 pl-10 rounded-xl border-none shadow-sm bg-white/90 outline-none focus:ring-2 focus:ring-emerald-600">
+                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+        </div>
+
+        <div class="glass-main p-6 rounded-3xl shadow-2xl">
+            <table class="w-full text-left">
+                <thead class="text-gray-600 border-b border-gray-300">
+                    <tr class="text-[11px] uppercase font-bold tracking-wider">
+                        <th class="p-3 w-10"></th>
+                        <th class="p-3">Nom</th>
+                        <th class="p-3">Type</th>
+                        <th class="p-3">Localisation</th>
+                        <th class="p-3">Statut</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="text-gray-700 divide-y divide-gray-200">
+                    </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // --- LOGIQUE DE RECHERCHE ---
+        async function chargerObjets(query = "") {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/things/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ search_query: query })
+                });
+
+                const items = await response.json();
+                const tbody = document.getElementById('tableBody');
+                
+                tbody.innerHTML = items.map(item => `
+                    <tr class="hover:bg-emerald-50/50 transition">
+                        <td class="p-3"><input type="checkbox" class="rounded"></td>
+                        <td class="p-3 flex items-center gap-3 font-medium">
+                            <i class="fas fa-cube text-emerald-600"></i> ${item.name || 'Sans nom'}
+                        </td>
+                        <td class="p-3 text-sm">${item.type || 'N/A'}</td>
+                        <td class="p-3 text-sm">${item.location?.room || item.location || 'N/A'}</td>
+                        <td class="p-3">
+                            <span class="px-4 py-1 rounded-full text-xs font-bold ${item.status === 'active' || item.status === 'Disponible' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}">
+                                ● ${item.status || 'inconnu'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error("Erreur lors de la recherche:", error);
+            }
+        }
+
+        // --- ÉVÉNEMENTS ---
+        document.getElementById('mainSearch').addEventListener('input', (e) => {
+            chargerObjets(e.target.value);
+        });
+
+        // Charger tout au démarrage
+        window.onload = () => chargerObjets("");
+    </script>
+</body>
+</html>
